@@ -747,8 +747,8 @@ int udb_query_pick_from_list_by_name (const char *name, /* {{{ */
   }
   else
   {
-    DEBUG ("db query utils: Added %i versions of query `%s'.",
-        num_added, name);
+    DEBUG ("db query utils: Added %i version%s of query `%s'.",
+        num_added, (num_added == 1) ? "" : "s", name);
   }
 
   return (0);
