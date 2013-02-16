@@ -159,8 +159,17 @@ static int wm_write (const data_set_t *ds, /* {{{ */
   bson *bson_record;
   int status;
 
-  ssnprintf (collection_name, sizeof (collection_name), "collectd.%s",
-      vl->plugin);
+  char *username = NULL;
+  if (meta_data_get_string (vl->meta, "network:username", &username) == 0) {
+    ssnprintf (collection_name, sizeof (collection_name), "collectd_%s.%s",
+        username, vl->plugin);
+    sfree(username);
+  } else {
+    WARNING ("No username provided with this packet? Can't put in correct collection");
+    ssnprintf (collection_name, sizeof (collection_name), "collectd.%s",
+        vl->plugin);
+  }
+
 
   bson_record = wm_create_bson (ds, vl, node->store_rates);
   if (bson_record == NULL)
