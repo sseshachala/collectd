@@ -157,14 +157,23 @@ static int gr_format_name (char *ret, int ret_len,
     else
         sstrncpy (tmp_type, n_type, sizeof (tmp_type));
 
+    char *username = NULL;
+    if (meta_data_get_string (vl->meta, "network:username", &username) != 0) {
+      WARNING ("No username provided with this packet? Can't write to graphite correctly");
+    }
+
     /* Assert always_append_ds -> ds_name */
     assert (!(flags & GRAPHITE_ALWAYS_APPEND_DS) || (ds_name != NULL));
     if (ds_name != NULL)
-        ssnprintf (ret, ret_len, "%s%s%s.%s.%s.%s",
-            prefix, n_host, postfix, tmp_plugin, tmp_type, ds_name);
+        ssnprintf (ret, ret_len, "%s%s.%s%s.%s.%s.%s",
+            prefix, username, n_host, postfix, tmp_plugin, tmp_type, ds_name);
     else
-        ssnprintf (ret, ret_len, "%s%s%s.%s.%s",
-            prefix, n_host, postfix, tmp_plugin, tmp_type);
+        ssnprintf (ret, ret_len, "%s%s.%s%s.%s.%s",
+            prefix, username, n_host, postfix, tmp_plugin, tmp_type);
+
+    if (username != NULL) {
+      sfree(username);
+    }
 
     return (0);
 }
