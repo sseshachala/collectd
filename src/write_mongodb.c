@@ -161,7 +161,7 @@ static int wm_write (const data_set_t *ds, /* {{{ */
 
   char *username = NULL;
   if (meta_data_get_string (vl->meta, "network:username", &username) == 0) {
-    ssnprintf (collection_name, sizeof (collection_name), "collectd_%s.%s",
+    ssnprintf (collection_name, sizeof (collection_name), "xervmon_collectd_%s.%s",
         username, vl->plugin);
     sfree(username);
   } else {
