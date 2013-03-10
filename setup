@@ -1,4 +1,26 @@
 sudo apt-get update
+
+
+Download carbon, whisper and graphite from https://launchpad.net/graphite
+
+# First we install whisper, as both Carbon and Graphite require it
+tar zxf whisper-0.9.8.tgz
+cd whisper-0.9.8/
+sudo python2.6 setup.py install
+cd ..
+# Now we install carbon
+tar zxf carbon-0.9.8.tgz
+cd carbon-0.9.8/
+sudo python2.6 setup.py install
+cd ..
+# Finally, the graphite webapp
+tar zxf graphite-web-0.9.8.tgz
+cd graphite-web-0.9.8/
+./check-dependencies.py
+# once all dependencies are met...
+sudo python2.6 setup.py install
+
+
 sudo apt-get install mongodb graphite-carbon git build-essential autoconf libtool scons
 sudo apt-get build-dep collectd
 
