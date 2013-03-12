@@ -24,6 +24,9 @@ sudo python2.6 setup.py install
 sudo apt-get install mongodb graphite-carbon git build-essential autoconf libtool scons
 sudo apt-get build-dep collectd
 
+sudo apt-get install python-pip python-dev build-essential 
+$ sudo pip install --upgrade pip 
+
 Install mongo client
 git clone https://github.com/mongodb/mongo-c-driver.git
 cd mongo-c-driver
