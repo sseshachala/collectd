@@ -208,6 +208,13 @@ int strsubstitute (char *str, char c_from, char c_to);
  */
 int strunescape (char *buf, size_t buf_len);
 
+/**
+ * Removed trailing newline characters (CR and LF) from buffer, which must be
+ * null terminated. Returns the length of the resulting string.
+ */
+__attribute__((nonnull (1)))
+size_t strstripnewline (char *buffer);
+
 /*
  * NAME
  *   timeval_cmp
@@ -316,5 +323,8 @@ int service_name_to_port_number (const char *service_name);
 /** Parse a string to a derive_t value. Returns zero on success or non-zero on
  * failure. If failure is returned, ret_value is not touched. */
 int strtoderive (const char *string, derive_t *ret_value);
+
+int strarray_add (char ***ret_array, size_t *ret_array_len, char const *str);
+void strarray_free (char **array, size_t array_len);
 
 #endif /* COMMON_H */

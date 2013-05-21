@@ -80,6 +80,8 @@ struct wg_callback
 {
     int      sock_fd;
 
+    char    *name;
+
     char    *node;
     char    *service;
     char    *prefix;
@@ -251,6 +253,7 @@ static void wg_callback_free (void *data)
     close(cb->sock_fd);
     cb->sock_fd = -1;
 
+    sfree(cb->name);
     sfree(cb->node);
     sfree(cb->service);
     sfree(cb->prefix);
@@ -421,7 +424,7 @@ static int config_set_char (char *dest,
     return (0);
 }
 
-static int wg_config_carbon (oconfig_item_t *ci)
+static int wg_config_node (oconfig_item_t *ci)
 {
     struct wg_callback *cb;
     user_data_t user_data;
@@ -436,12 +439,24 @@ static int wg_config_carbon (oconfig_item_t *ci)
     }
     memset (cb, 0, sizeof (*cb));
     cb->sock_fd = -1;
+    cb->name = NULL;
     cb->node = NULL;
     cb->service = NULL;
     cb->prefix = NULL;
     cb->postfix = NULL;
     cb->escape_char = WG_DEFAULT_ESCAPE;
     cb->format_flags = GRAPHITE_STORE_RATES;
+
+    /* FIXME: Legacy configuration syntax. */
+    if (strcasecmp ("Carbon", ci->key) != 0)
+    {
+        int status = cf_util_get_string (ci, &cb->name);
+        if (status != 0)
+        {
+            wg_callback_free (cb);
+            return (status);
+        }
+    }
 
     pthread_mutex_init (&cb->send_lock, /* attr = */ NULL);
     C_COMPLAIN_INIT (&cb->init_complaint);
@@ -476,9 +491,14 @@ static int wg_config_carbon (oconfig_item_t *ci)
         }
     }
 
-    ssnprintf (callback_name, sizeof (callback_name), "write_graphite/%s/%s",
-            cb->node != NULL ? cb->node : WG_DEFAULT_NODE,
-            cb->service != NULL ? cb->service : WG_DEFAULT_SERVICE);
+    /* FIXME: Legacy configuration syntax. */
+    if (cb->name == NULL)
+        ssnprintf (callback_name, sizeof (callback_name), "write_graphite/%s/%s",
+                cb->node != NULL ? cb->node : WG_DEFAULT_NODE,
+                cb->service != NULL ? cb->service : WG_DEFAULT_SERVICE);
+    else
+        ssnprintf (callback_name, sizeof (callback_name), "write_graphite/%s",
+                cb->name);
 
     memset (&user_data, 0, sizeof (user_data));
     user_data.data = cb;
@@ -499,8 +519,11 @@ static int wg_config (oconfig_item_t *ci)
     {
         oconfig_item_t *child = ci->children + i;
 
-        if (strcasecmp ("Carbon", child->key) == 0)
-            wg_config_carbon (child);
+        if (strcasecmp ("Node", child->key) == 0)
+            wg_config_node (child);
+        /* FIXME: Remove this legacy mode in version 6. */
+        else if (strcasecmp ("Carbon", child->key) == 0)
+            wg_config_node (child);
         else
         {
             ERROR ("write_graphite plugin: Invalid configuration "

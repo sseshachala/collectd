@@ -361,6 +361,22 @@ int strunescape (char *buf, size_t buf_len)
 	return (0);
 } /* int strunescape */
 
+size_t strstripnewline (char *buffer)
+{
+	size_t buffer_len = strlen (buffer);
+
+	while (buffer_len > 0)
+	{
+		if ((buffer[buffer_len - 1] != '\n')
+				&& (buffer[buffer_len - 1] != '\r'))
+			break;
+		buffer[buffer_len] = 0;
+		buffer_len--;
+	}
+
+	return (buffer_len);
+} /* size_t strstripnewline */
+
 int escape_slashes (char *buf, int buf_len)
 {
 	int i;
@@ -1396,3 +1412,35 @@ int strtoderive (const char *string, derive_t *ret_value) /* {{{ */
 	*ret_value = tmp;
 	return (0);
 } /* }}} int strtoderive */
+
+int strarray_add (char ***ret_array, size_t *ret_array_len, char const *str) /* {{{ */
+{
+	char **array;
+	size_t array_len = *ret_array_len;
+
+	if (str == NULL)
+		return (EINVAL);
+
+	array = realloc (*ret_array,
+            (array_len + 1) * sizeof (*array));
+	if (array == NULL)
+		return (ENOMEM);
+	*ret_array = array;
+
+	array[array_len] = strdup (str);
+	if (array[array_len] == NULL)
+		return (ENOMEM);
+
+	array_len++;
+        *ret_array_len = array_len;
+	return (0);
+} /* }}} int strarray_add */
+
+void strarray_free (char **array, size_t array_len) /* {{{ */
+{
+	size_t i;
+
+	for (i = 0; i < array_len; i++)
+		sfree (array[i]);
+	sfree (array);
+} /* }}} void strarray_free */

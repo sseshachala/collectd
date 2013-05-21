@@ -133,7 +133,7 @@ Features
       technique built into IBM's POWER processors.
 
     - libvirt
-      CPU, disk and network I/O statistics from virtual machines.
+      CPU, memory, disk and network I/O statistics from virtual machines.
 
     - madwifi
       Queries very detailed usage statistics from wireless LAN adapters and
@@ -284,6 +284,10 @@ Features
       Follows (tails) logfiles, parses them by lines and submits matched
       values.
 
+    - tail_csv
+      Follows (tails) files in CSV format, parses each line and submits
+      extracted values.
+
     - tape
       Bytes and operations read and written on tape devices. Solaris only.
 
@@ -379,8 +383,14 @@ Features
       requests. The transmitted data is either in a form understood by the
       Exec plugin or formatted in JSON.
 
+    - write_mongodb
+      Sends data to MongoDB, a NoSQL database.
+
     - write_redis
       Sends the values to a Redis key-value database server.
+
+    - write_riemann
+      Sends data to Riemann, a stream processing and monitoring system.
 
   * Logging is, as everything in collectd, provided by plugins. The following
     plugins keep up informed about what's going on:
