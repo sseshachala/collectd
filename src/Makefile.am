@@ -33,6 +33,7 @@ collectd_SOURCES = collectd.c collectd.h \
 		   utils_ignorelist.c utils_ignorelist.h \
 		   utils_llist.c utils_llist.h \
 		   utils_parse_option.c utils_parse_option.h \
+		   utils_random.c utils_random.h \
 		   utils_tail_match.c utils_tail_match.h \
 		   utils_match.c utils_match.h \
 		   utils_subst.c utils_subst.h \
@@ -135,7 +136,7 @@ collectd_tg_DEPENDENCIES = libcollectdclient/libcollectdclient.la
 pkglib_LTLIBRARIES = 
 
 BUILT_SOURCES = 
-CLEANFILES = 
+CLEANFILES =
 
 if BUILD_PLUGIN_AGGREGATION
 pkglib_LTLIBRARIES += aggregation.la
@@ -903,10 +904,9 @@ collectd_DEPENDENCIES += pf.la
 endif
 
 if BUILD_PLUGIN_PINBA
-BUILT_SOURCES += pinba.pb-c.c pinba.pb-c.h
-CLEANFILES += pinba.pb-c.c pinba.pb-c.h
 pkglib_LTLIBRARIES += pinba.la
 pinba_la_SOURCES = pinba.c
+nodist_pinba_la_SOURCES = pinba.pb-c.c pinba.pb-c.h
 pinba_la_LDFLAGS = -module -avoid-version
 pinba_la_LIBADD = -lprotobuf-c
 collectd_LDADD += "-dlopen" pinba.la
@@ -1101,6 +1101,14 @@ tail_la_SOURCES = tail.c
 tail_la_LDFLAGS = -module -avoid-version
 collectd_LDADD += "-dlopen" tail.la
 collectd_DEPENDENCIES += tail.la
+endif
+
+if BUILD_PLUGIN_TAIL_CSV
+pkglib_LTLIBRARIES += tail_csv.la
+tail_csv_la_SOURCES = tail_csv.c
+tail_csv_la_LDFLAGS = -module -avoid-version
+collectd_LDADD += "-dlopen" tail_csv.la
+collectd_DEPENDENCIES += tail_csv.la
 endif
 
 if BUILD_PLUGIN_TAPE
@@ -1342,6 +1350,16 @@ collectd_LDADD += "-dlopen" write_redis.la
 collectd_DEPENDENCIES += write_redis.la
 endif
 
+if BUILD_PLUGIN_WRITE_RIEMANN
+pkglib_LTLIBRARIES += write_riemann.la
+write_riemann_la_SOURCES = write_riemann.c
+nodist_write_riemann_la_SOURCES = riemann.pb-c.c riemann.pb-c.h
+write_riemann_la_LDFLAGS = -module -avoid-version
+write_riemann_la_LIBADD = -lprotobuf-c
+collectd_LDADD += "-dlopen" write_riemann.la
+collectd_DEPENDENCIES += write_riemann.la
+endif
+
 if BUILD_PLUGIN_XMMS
 pkglib_LTLIBRARIES += xmms.la
 xmms_la_SOURCES = xmms.c
@@ -1382,7 +1400,7 @@ dist_man_MANS = collectd.1 \
 
 #collectd_1_SOURCES = collectd.pod
 
-EXTRA_DIST = types.db pinba.proto
+EXTRA_DIST = types.db
 
 EXTRA_DIST +=   collectd.conf.pod \
 		collectd-email.pod \
@@ -1417,8 +1435,26 @@ EXTRA_DIST +=   collectd.conf.pod \
 		echo "$@ has some POD errors!"; false; \
 	fi
 
+# Protocol buffer for the "pinba" plugin.
+EXTRA_DIST += pinba.proto
+if HAVE_PROTOC_C
+CLEANFILES += pinba.pb-c.c pinba.pb-c.h
+BUILT_SOURCES += pinba.pb-c.c pinba.pb-c.h
+
 pinba.pb-c.c pinba.pb-c.h: pinba.proto
 	protoc-c -I$(srcdir) --c_out . $(srcdir)/pinba.proto
+endif
+
+# Protocol buffer for the "write_riemann" plugin.
+EXTRA_DIST += riemann.proto
+if HAVE_PROTOC_C
+CLEANFILES += riemann.pb-c.c riemann.pb-c.h
+
+BUILT_SOURCES += riemann.pb-c.c riemann.pb-c.h
+
+riemann.pb-c.c riemann.pb-c.h: riemann.proto
+	protoc-c -I$(srcdir) --c_out . $(srcdir)/riemann.proto
+endif
 
 install-exec-hook:
 	$(mkinstalldirs) $(DESTDIR)$(sysconfdir)

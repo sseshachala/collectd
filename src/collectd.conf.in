@@ -28,6 +28,7 @@
 
 #Timeout      2
 #ReadThreads  5
+#WriteThreads 5
 
 ##############################################################################
 # Logging                                                                    #
@@ -143,6 +144,7 @@
 #@BUILD_PLUGIN_SWAP_TRUE@LoadPlugin swap
 #@BUILD_PLUGIN_TABLE_TRUE@LoadPlugin table
 #@BUILD_PLUGIN_TAIL_TRUE@LoadPlugin tail
+#@BUILD_PLUGIN_TAIL_CSV_TRUE@LoadPlugin tail_csv
 #@BUILD_PLUGIN_TAPE_TRUE@LoadPlugin tape
 #@BUILD_PLUGIN_TCPCONNS_TRUE@LoadPlugin tcpconns
 #@BUILD_PLUGIN_TEAMSPEAK2_TRUE@LoadPlugin teamspeak2
@@ -159,8 +161,9 @@
 #@BUILD_PLUGIN_WIRELESS_TRUE@LoadPlugin wireless
 #@BUILD_PLUGIN_WRITE_GRAPHITE_TRUE@LoadPlugin write_graphite
 #@BUILD_PLUGIN_WRITE_HTTP_TRUE@LoadPlugin write_http
-#@BUILD_PLUGIN_WRITE_REDIS_TRUE@LoadPlugin write_redis
 #@BUILD_PLUGIN_WRITE_MONGODB_TRUE@LoadPlugin write_mongodb
+#@BUILD_PLUGIN_WRITE_REDIS_TRUE@LoadPlugin write_redis
+#@BUILD_PLUGIN_WRITE_RIEMANN_TRUE@LoadPlugin write_riemann
 #@BUILD_PLUGIN_XMMS_TRUE@LoadPlugin xmms
 #@BUILD_PLUGIN_ZFS_ARC_TRUE@LoadPlugin zfs_arc
 
@@ -217,6 +220,7 @@
 #<Plugin apcups>
 #	Host "localhost"
 #	Port "3551"
+#	ReportSeconds true
 #</Plugin>
 
 #<Plugin ascent>
@@ -334,6 +338,7 @@
 #		#SelectDB "custdb0"
 #		Query "num_of_customers"
 #		#Query "..."
+#		#Host "..."
 #	</Database>
 #</Plugin>
 
@@ -850,13 +855,16 @@
 #	DaemonAddress "unix:/tmp/rrdcached.sock"
 #	DataDir "@localstatedir@/lib/@PACKAGE_NAME@/rrd"
 #	CreateFiles true
+#	CreateFilesAsync false
 #	CollectStatistics true
 #</Plugin>
 
 #<Plugin rrdtool>
 #	DataDir "@localstatedir@/lib/@PACKAGE_NAME@/rrd"
+#	CreateFilesAsync false
 #	CacheTimeout 120
 #	CacheFlush   900
+#	WritesPerSecond 50
 #</Plugin>
 
 #<Plugin sensors>
@@ -952,6 +960,33 @@
 #  </File>
 #</Plugin>
 
+#<Plugin "tail_csv">
+#   <Metric "dropped">
+#       Type "percent"
+#       Instance "dropped"
+#       ValueFrom 1
+#   </Metric>
+#   <Metric "mbps">
+#       Type "bytes"
+#       Instance "wire-realtime"
+#       ValueFrom 2
+#   </Metric>
+#   <Metric "alerts">
+#       Type "alerts_per_second"
+#       ValueFrom 3
+#   </Metric>
+#   <Metric "kpps">
+#       Type "kpackets_wire_per_sec.realtime"
+#       ValueFrom 4
+#   </Metric>
+#   <File "/var/log/snort/snort.stats">
+#       Instance "snort-eth0"
+#       Interval 600
+#       Collect "dropped" "mbps" "alerts" "kpps"
+#       TimeFrom 0
+#   </File>
+#</Plugin>
+
 #<Plugin tcpconns>
 #	ListeningPorts false
 #	LocalPort "25"
@@ -1017,15 +1052,15 @@
 #</Plugin>
 
 #<Plugin write_graphite>
-#  <Carbon>
+#  <Node "example">
 #    Host "localhost"
 #    Port "2003"
 #    Prefix "collectd"
 #    Postfix "collectd"
-#    StoreRates false
+#    StoreRates true
 #    AlwaysAppendDS false
 #    EscapeCharacter "_"
-#  </Carbon>
+#  </Node>
 #</Plugin>
 
 #<Plugin write_http>
@@ -1040,6 +1075,18 @@
 #	</URL>
 #</Plugin>
 
+#<Plugin write_mongodb>
+#	<Node "example">
+#		Host "localhost"
+#		Port "27017"
+#		Timeout 1000
+#		StoreRates false
+#		Database "auth_db"
+#		User "auth_user"
+#		Password "auth_passwd"
+#	</Node>
+#</Plugin>
+
 #<Plugin write_redis>
 #	<Node "example">
 #		Host "localhost"
@@ -1048,13 +1095,15 @@
 #	</Node>
 #</Plugin>
 
-#<Plugin write_mongodb>
+#<Plugin write_riemann>
 #	<Node "example">
 #		Host "localhost"
-#		Port "27017"
-#		Timeout 1000
-#		StoreRates false
+#		Port 5555
+#		Protocol UDP
+#		StoreRates true
+#		AlwaysAppendDS false
 #	</Node>
+#	Tag "foobar"
 #</Plugin>
 
 ##############################################################################

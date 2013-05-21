@@ -91,6 +91,9 @@ Jason Pepas <cell at ices.utexas.edu>
 Jérôme Renard <jerome.renard at gmail.com>
  - varnish plugin.
 
+Kris Nielander <nielander at fox-it.com>
+ - tail_csv plugin.
+
 Luboš Staněk <kolektor at atlas.cz>
  - sensors plugin improvements.
  - Time and effort to find a nasty bug in the ntpd-plugin.
@@ -164,6 +167,10 @@ Peter Holik <peter at holik.at>
 
 Phoenix Kayo <kayo.k11.4 at gmail.com>
  - pinba plugin.
+
+Pierre-Yves Ritschard <pyr at spootnik.org>
+ - Write-Riemann plugin.
+ - Write-Graphite plugin: Notification support.
 
 Piotr Hosowicz <the55 at wp.pl>
  - SMF manifest for collectd.
